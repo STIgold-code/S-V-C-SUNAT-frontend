@@ -26,9 +26,9 @@ interface DescargaFormProps {
   onCancel: () => void;
 }
 
-const MODULOS_SIRE = [
-  { value: 'facturas_emitidas', label: 'Ventas (SIRE)' },
-  { value: 'facturas_recibidas', label: 'Compras (SIRE)' },
+const MODULOS_FACTURAS = [
+  { value: 'facturas_emitidas', label: 'Facturas Emitidas' },
+  { value: 'facturas_recibidas', label: 'Facturas Recibidas' },
 ];
 
 const MODULOS_BOLETAS = [
@@ -167,7 +167,7 @@ export function DescargaForm({ empresas, onSubmit, onCancel }: DescargaFormProps
       <div className="space-y-2">
         <Label className="text-sm">Modulos</Label>
         <div className="grid grid-cols-2 gap-2">
-          {renderModuloGroup('SIRE', MODULOS_SIRE, 'text-primary')}
+          {renderModuloGroup('Facturas', MODULOS_FACTURAS, 'text-primary')}
           {renderModuloGroup('Boletas', MODULOS_BOLETAS, 'text-violet-500')}
           {renderModuloGroup('Guias', MODULOS_GUIAS, 'text-amber-500')}
           {renderModuloGroup('Ret/Per', MODULOS_RET_PER, 'text-rose-500')}

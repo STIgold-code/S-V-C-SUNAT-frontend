@@ -41,8 +41,8 @@ const DIAS_SEMANA = [
 ];
 
 const MODULOS = [
-  { value: 'facturas_emitidas', label: 'Ventas (SIRE)', group: 'SIRE' },
-  { value: 'facturas_recibidas', label: 'Compras (SIRE)', group: 'SIRE' },
+  { value: 'facturas_emitidas', label: 'Facturas Emitidas', group: 'Facturas' },
+  { value: 'facturas_recibidas', label: 'Facturas Recibidas', group: 'Facturas' },
   { value: 'boletas_emitidas', label: 'Boletas Emitidas', group: 'Boletas' },
   { value: 'boletas_recibidas', label: 'Boletas Recibidas', group: 'Boletas' },
   { value: 'nc_boletas_emitidas', label: 'NC Boletas Emitidas', group: 'Boletas' },
