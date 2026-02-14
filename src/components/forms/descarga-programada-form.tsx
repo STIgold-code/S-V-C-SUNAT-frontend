@@ -45,6 +45,8 @@ const MODULOS = [
   { value: 'facturas_recibidas', label: 'Compras (SIRE)', group: 'SIRE' },
   { value: 'boletas_emitidas', label: 'Boletas Emitidas', group: 'Boletas' },
   { value: 'boletas_recibidas', label: 'Boletas Recibidas', group: 'Boletas' },
+  { value: 'nc_boletas_emitidas', label: 'NC Boletas Emitidas', group: 'Boletas' },
+  { value: 'nd_boletas_emitidas', label: 'ND Boletas Emitidas', group: 'Boletas' },
   { value: 'guias_remision_emitidas', label: 'GR Remitente Emitidas', group: 'Guias' },
   { value: 'guias_remision_recibidas', label: 'GR Remitente Recibidas', group: 'Guias' },
   { value: 'guias_transportista_emitidas', label: 'GR Transp. Emitidas', group: 'Guias' },

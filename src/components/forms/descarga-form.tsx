@@ -34,6 +34,8 @@ const MODULOS_SIRE = [
 const MODULOS_BOLETAS = [
   { value: 'boletas_emitidas', label: 'Boletas Emitidas' },
   { value: 'boletas_recibidas', label: 'Boletas Recibidas' },
+  { value: 'nc_boletas_emitidas', label: 'NC Boletas Emitidas' },
+  { value: 'nd_boletas_emitidas', label: 'ND Boletas Emitidas' },
 ];
 
 const MODULOS_GUIAS = [

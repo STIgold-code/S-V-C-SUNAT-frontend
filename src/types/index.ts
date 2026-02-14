@@ -68,6 +68,8 @@ export type ModuloType =
   | 'facturas_recibidas'
   | 'boletas_emitidas'
   | 'boletas_recibidas'
+  | 'nc_boletas_emitidas'
+  | 'nd_boletas_emitidas'
   | 'guias_remision_emitidas'
   | 'guias_remision_recibidas'
   | 'guias_transportista_emitidas'
