@@ -22,10 +22,20 @@ import {
   XCircle,
   Clock,
   FileSpreadsheet,
+  Ban,
 } from 'lucide-react';
 import type { Empresa } from '@/types';
 import { DescargaForm } from '@/components/forms/descarga-form';
 import { cn } from '@/lib/utils';
+
+// Convertir fecha UTC del backend a Date local
+function parseUTCDate(dateStr: string): Date {
+  // El backend devuelve UTC sin 'Z', agregar para que JS lo interprete correctamente
+  if (!dateStr.endsWith('Z') && !dateStr.includes('+')) {
+    return new Date(dateStr + 'Z');
+  }
+  return new Date(dateStr);
+}
 
 interface DescargaList {
   id: string;
@@ -33,12 +43,36 @@ interface DescargaList {
   empresa_razon_social: string | null;
   estado: string;
   periodo: string;
+  modulos: string[];
   total_comprobantes: number;
   progreso: number;
   mensaje_progreso: string | null;
   errores: string | null;
   created_at: string;
 }
+
+// Mapeo de módulos a nombres cortos
+const MODULO_LABELS: Record<string, string> = {
+  facturas_emitidas: 'Fact. Emit.',
+  facturas_recibidas: 'Fact. Recib.',
+  boletas_emitidas: 'Bol. Emit.',
+  boletas_recibidas: 'Bol. Recib.',
+  nc_boletas_emitidas: 'NC Bol.',
+  nd_boletas_emitidas: 'ND Bol.',
+  guias_remision_emitidas: 'GRE Emit.',
+  guias_remision_recibidas: 'GRE Recib.',
+  guias_transportista_emitidas: 'GRE Transp. E.',
+  guias_transportista_recibidas: 'GRE Transp. R.',
+  retenciones_emitidas: 'Ret. Emit.',
+  retenciones_recibidas: 'Ret. Recib.',
+  percepciones_emitidas: 'Perc. Emit.',
+  percepciones_recibidas: 'Perc. Recib.',
+};
+
+const formatModulos = (modulos: string[]): string => {
+  if (!modulos || modulos.length === 0) return '';
+  return modulos.map(m => MODULO_LABELS[m] || m).join(', ');
+};
 
 export default function DescargasPage() {
   const [descargas, setDescargas] = useState<DescargaList[]>([]);
@@ -104,6 +138,17 @@ export default function DescargasPage() {
       fetchDescargas();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Error al reintentar');
+    }
+  };
+
+  const handleCancel = async (descargaId: string) => {
+    try {
+      const token = localStorage.getItem('svc_sunat_token');
+      await api.post(`/descargas/${descargaId}/cancel`, {}, token || undefined);
+      toast.success('Descarga cancelada');
+      fetchDescargas();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Error al cancelar');
     }
   };
 
@@ -200,6 +245,11 @@ export default function DescargasPage() {
         label: 'Fallido',
         className: 'text-destructive bg-destructive/10',
       },
+      cancelled: {
+        icon: <Ban className="h-4 w-4" />,
+        label: 'Cancelado',
+        className: 'text-orange-500 bg-orange-500/10',
+      },
     };
     return config[estado] || { icon: null, label: estado, className: 'text-muted-foreground bg-muted' };
   };
@@ -294,6 +344,11 @@ export default function DescargasPage() {
                           {descarga.errores}
                         </p>
                       )}
+                      {descarga.estado === 'cancelled' && (
+                        <p className="text-xs text-orange-500 mt-1">
+                          {descarga.mensaje_progreso || 'Cancelada por el usuario'}
+                        </p>
+                      )}
                     </div>
 
                     {/* Stats */}
@@ -302,14 +357,25 @@ export default function DescargasPage() {
                         <p className="text-muted-foreground">Periodo</p>
                         <p className="font-medium text-foreground">{descarga.periodo}</p>
                       </div>
+                      <div className="max-w-[120px]">
+                        <p className="text-muted-foreground">Módulos</p>
+                        <p className="font-medium text-foreground truncate" title={formatModulos(descarga.modulos)}>
+                          {formatModulos(descarga.modulos) || '-'}
+                        </p>
+                      </div>
                       <div>
                         <p className="text-muted-foreground">Docs</p>
                         <p className="font-medium text-foreground">{descarga.total_comprobantes}</p>
                       </div>
                       <div className="hidden sm:block">
-                        <p className="text-muted-foreground">Fecha</p>
+                        <p className="text-muted-foreground">Fecha/Hora</p>
                         <p className="font-medium text-foreground">
-                          {new Date(descarga.created_at).toLocaleDateString('es-PE')}
+                          {parseUTCDate(descarga.created_at).toLocaleString('es-PE', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
                         </p>
                       </div>
                     </div>
@@ -362,6 +428,17 @@ export default function DescargasPage() {
                         >
                           <RefreshCw className="h-3.5 w-3.5 mr-1" />
                           Reintentar
+                        </Button>
+                      )}
+                      {(descarga.estado === 'processing' || descarga.estado === 'pending') && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-orange-500 border-orange-500/30 hover:bg-orange-500/10"
+                          onClick={() => handleCancel(descarga.id)}
+                        >
+                          <Ban className="h-3.5 w-3.5 mr-1" />
+                          Cancelar
                         </Button>
                       )}
                     </div>

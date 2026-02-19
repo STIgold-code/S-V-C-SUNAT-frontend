@@ -81,7 +81,7 @@ export type ModuloType =
 
 export type FormatoType = 'xml' | 'pdf' | 'cdr' | 'json';
 
-export type EstadoDescarga = 'pending' | 'processing' | 'completed' | 'failed';
+export type EstadoDescarga = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
 
 export interface Descarga {
   id: string;
@@ -128,7 +128,10 @@ export interface Comprobante {
   ruc_receptor: string | null;
   razon_receptor: string | null;
   moneda: string;
+  subtotal: number | null;
+  igv: number | null;
   total: number | null;
+  estado: string | null;
   modulo: string;
   has_xml: boolean;
   has_pdf: boolean;

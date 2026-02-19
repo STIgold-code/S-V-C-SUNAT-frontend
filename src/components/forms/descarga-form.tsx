@@ -62,11 +62,11 @@ const FORMATOS = [
   { value: 'cdr', label: 'CDR', icon: FileArchive },
 ];
 
-function getLast12Months(): { value: string; label: string }[] {
+function getLast24Months(): { value: string; label: string }[] {
   const months = [];
   const now = new Date();
 
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 24; i++) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     const label = date.toLocaleDateString('es-PE', { year: 'numeric', month: 'long' });
@@ -80,10 +80,10 @@ export function DescargaForm({ empresas, onSubmit, onCancel }: DescargaFormProps
   const [loading, setLoading] = useState(false);
   const [empresaId, setEmpresaId] = useState('');
   const [periodo, setPeriodo] = useState('');
-  const [modulos, setModulos] = useState<string[]>(['facturas_emitidas', 'facturas_recibidas']);
+  const [modulos, setModulos] = useState<string[]>([]);
   const [formatos, setFormatos] = useState<string[]>(['xml', 'pdf']);
 
-  const periodos = getLast12Months();
+  const periodos = getLast24Months();
 
   const toggleModulo = (modulo: string) => {
     setModulos((prev) =>

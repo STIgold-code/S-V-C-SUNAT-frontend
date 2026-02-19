@@ -146,7 +146,7 @@ export default function EmpresasPage() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/empresas/importar`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/empresas/importar`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
