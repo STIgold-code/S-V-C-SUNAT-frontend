@@ -37,19 +37,14 @@ function parseUTCDate(dateStr: string): Date {
   return new Date(dateStr);
 }
 
-function formatTimeAgo(dateStr: string): string {
+function formatDateTime(dateStr: string): string {
   const date = parseUTCDate(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return 'Ahora';
-  if (diffMins < 60) return `Hace ${diffMins} min`;
-  if (diffHours < 24) return `Hace ${diffHours}h`;
-  if (diffDays === 1) return 'Ayer';
-  return `Hace ${diffDays} días`;
+  return date.toLocaleString('es-PE', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 const MODULO_LABELS: Record<string, string> = {
@@ -229,62 +224,28 @@ export default function DashboardPage() {
           {/* Failed */}
           {failed.map(d => {
             const friendlyError = translateError(d.errores);
-            const colorClass = friendlyError.type === 'user' ? 'amber-500'
-              : friendlyError.type === 'temporary' ? 'blue-500'
-              : friendlyError.type === 'sunat' ? 'orange-500'
-              : 'destructive';
 
             return (
-              <div key={d.id} className={cn(
-                "border rounded-lg p-4",
-                friendlyError.type === 'user' && "border-amber-500/50 bg-amber-500/5",
-                friendlyError.type === 'temporary' && "border-blue-500/50 bg-blue-500/5",
-                friendlyError.type === 'sunat' && "border-orange-500/50 bg-orange-500/5",
-                friendlyError.type === 'system' && "border-destructive/50 bg-destructive/5",
-              )}>
+              <div key={d.id} className="border border-destructive/50 bg-destructive/5 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5",
-                    friendlyError.type === 'user' && "bg-amber-500/10",
-                    friendlyError.type === 'temporary' && "bg-blue-500/10",
-                    friendlyError.type === 'sunat' && "bg-orange-500/10",
-                    friendlyError.type === 'system' && "bg-destructive/10",
-                  )}>
-                    <AlertTriangle className={cn(
-                      "h-4 w-4",
-                      friendlyError.type === 'user' && "text-amber-500",
-                      friendlyError.type === 'temporary' && "text-blue-500",
-                      friendlyError.type === 'sunat' && "text-orange-500",
-                      friendlyError.type === 'system' && "text-destructive",
-                    )} />
+                  <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={cn(
-                      "text-sm font-medium",
-                      friendlyError.type === 'user' && "text-amber-500",
-                      friendlyError.type === 'temporary' && "text-blue-500",
-                      friendlyError.type === 'sunat' && "text-orange-500",
-                      friendlyError.type === 'system' && "text-destructive",
-                    )}>
-                      {friendlyError.message}
+                    <p className="text-sm font-medium text-foreground">
+                      {formatModulos(d.modulos, 3)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {d.empresa_ruc} · {formatModulos(d.modulos)} · {formatPeriodo(d.periodo)}
+                      {d.empresa_ruc} - {d.empresa_razon_social || 'Sin nombre'} · {formatPeriodo(d.periodo)}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      💡 {friendlyError.action}
+                    <p className="text-xs text-destructive mt-2">
+                      ⚠️ {friendlyError.message} - {friendlyError.action}
                     </p>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className={cn(
-                      "flex-shrink-0",
-                      friendlyError.type === 'user' && "text-amber-500 hover:text-amber-500 hover:bg-amber-500/10",
-                      friendlyError.type === 'temporary' && "text-blue-500 hover:text-blue-500 hover:bg-blue-500/10",
-                      friendlyError.type === 'sunat' && "text-orange-500 hover:text-orange-500 hover:bg-orange-500/10",
-                      friendlyError.type === 'system' && "text-destructive hover:text-destructive hover:bg-destructive/10",
-                    )}
+                    className="flex-shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => handleRetry(d.id)}
                     disabled={retrying === d.id}
                   >
@@ -310,9 +271,11 @@ export default function DashboardPage() {
                   <CheckCircle className="h-4 w-4 text-emerald-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-emerald-500">Descarga lista</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {formatModulos(lastCompleted.modulos, 3)}
+                  </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {lastCompleted.empresa_ruc} · {formatModulos(lastCompleted.modulos)} · {lastCompleted.total_comprobantes} docs · {formatTimeAgo(lastCompleted.created_at)}
+                    {lastCompleted.empresa_ruc} - {lastCompleted.empresa_razon_social || 'Sin nombre'} · {lastCompleted.total_comprobantes} docs · {formatDateTime(lastCompleted.created_at)}
                   </p>
                 </div>
                 <Button
@@ -349,13 +312,15 @@ export default function DashboardPage() {
                   >
                     <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-mono">{d.empresa_ruc}</p>
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {formatModulos(d.modulos)}
+                      </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {formatModulos(d.modulos)} · {formatPeriodo(d.periodo)}
+                        {d.empresa_ruc} · {formatPeriodo(d.periodo)}
                       </p>
                     </div>
                     <p className="text-xs text-muted-foreground flex-shrink-0">{d.total_comprobantes} docs</p>
-                    <p className="text-xs text-muted-foreground flex-shrink-0">{formatTimeAgo(d.created_at)}</p>
+                    <p className="text-xs text-muted-foreground flex-shrink-0">{formatDateTime(d.created_at)}</p>
                   </div>
                 ))}
               </div>

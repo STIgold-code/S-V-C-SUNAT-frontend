@@ -352,20 +352,9 @@ export default function DescargasPage() {
                       {descarga.estado === 'failed' && descarga.errores && (() => {
                         const friendlyError = translateError(descarga.errores);
                         return (
-                          <div className="mt-1">
-                            <p className={cn(
-                              "text-xs font-medium",
-                              friendlyError.type === 'user' && "text-amber-500",
-                              friendlyError.type === 'temporary' && "text-blue-500",
-                              friendlyError.type === 'sunat' && "text-orange-500",
-                              friendlyError.type === 'system' && "text-destructive",
-                            )}>
-                              {friendlyError.message}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              💡 {friendlyError.action}
-                            </p>
-                          </div>
+                          <p className="text-xs text-destructive mt-1">
+                            ⚠️ {friendlyError.message} - {friendlyError.action}
+                          </p>
                         );
                       })()}
                       {descarga.estado === 'cancelled' && (
