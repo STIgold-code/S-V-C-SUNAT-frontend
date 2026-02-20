@@ -143,3 +143,17 @@ export interface ComprobantesPageResponse {
   skip: number;
   limit: number;
 }
+
+// DescargaArchivo types
+export interface DescargaArchivo {
+  id: string;
+  modulo: string;
+  tipo_archivo: 'zip' | 'excel';
+  nombre: string;
+  tamano_bytes: number;
+  created_at: string;
+}
+
+export interface DescargaArchivosResponse {
+  archivos: DescargaArchivo[];
+}

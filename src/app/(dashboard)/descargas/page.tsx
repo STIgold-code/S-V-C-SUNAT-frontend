@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import type { Empresa } from '@/types';
 import { DescargaForm } from '@/components/forms/descarga-form';
+import { DescargaArchivosModal } from '@/components/descarga-archivos-modal';
 import { cn } from '@/lib/utils';
 import { translateError } from '@/lib/error-messages';
 
@@ -89,6 +90,8 @@ export default function DescargasPage() {
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [archivosModalOpen, setArchivosModalOpen] = useState(false);
+  const [selectedDescargaId, setSelectedDescargaId] = useState<string | null>(null);
 
   const fetchDescargas = useCallback(async () => {
     try {
@@ -415,25 +418,17 @@ export default function DescargasPage() {
                     {/* Actions */}
                     <div className="flex gap-2 flex-shrink-0">
                       {descarga.estado === 'completed' && (
-                        <>
-                          <Button
-                            size="sm"
-                            className="h-8 bg-emerald-600 hover:bg-emerald-700"
-                            onClick={() => handleDownloadFile(descarga.id, descarga.periodo, descarga.empresa_ruc)}
-                          >
-                            <Download className="h-3.5 w-3.5 mr-1" />
-                            ZIP
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-emerald-600 border-emerald-600/30 hover:bg-emerald-600/10"
-                            onClick={() => handleDownloadExcel(descarga.id, descarga.periodo, descarga.empresa_ruc)}
-                          >
-                            <FileSpreadsheet className="h-3.5 w-3.5 mr-1" />
-                            Excel
-                          </Button>
-                        </>
+                        <Button
+                          size="sm"
+                          className="h-8 bg-emerald-600 hover:bg-emerald-700"
+                          onClick={() => {
+                            setSelectedDescargaId(descarga.id);
+                            setArchivosModalOpen(true);
+                          }}
+                        >
+                          <Download className="h-3.5 w-3.5 mr-1" />
+                          Archivos
+                        </Button>
                       )}
                       {descarga.estado === 'failed' && (
                         <Button
@@ -465,6 +460,13 @@ export default function DescargasPage() {
           })}
         </div>
       )}
+
+      {/* Modal de archivos */}
+      <DescargaArchivosModal
+        descargaId={selectedDescargaId}
+        open={archivosModalOpen}
+        onClose={() => setArchivosModalOpen(false)}
+      />
     </div>
   );
 }
