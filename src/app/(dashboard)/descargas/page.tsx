@@ -27,6 +27,7 @@ import {
 import type { Empresa } from '@/types';
 import { DescargaForm } from '@/components/forms/descarga-form';
 import { cn } from '@/lib/utils';
+import { translateError } from '@/lib/error-messages';
 
 // Convertir fecha UTC del backend a Date local
 function parseUTCDate(dateStr: string): Date {
@@ -51,27 +52,36 @@ interface DescargaList {
   created_at: string;
 }
 
-// Mapeo de módulos a nombres cortos
+// Mapeo de módulos a nombres completos
 const MODULO_LABELS: Record<string, string> = {
-  facturas_emitidas: 'Fact. Emit.',
-  facturas_recibidas: 'Fact. Recib.',
-  boletas_emitidas: 'Bol. Emit.',
-  boletas_recibidas: 'Bol. Recib.',
-  nc_boletas_emitidas: 'NC Bol.',
-  nd_boletas_emitidas: 'ND Bol.',
-  guias_remision_emitidas: 'GRE Emit.',
-  guias_remision_recibidas: 'GRE Recib.',
-  guias_transportista_emitidas: 'GRE Transp. E.',
-  guias_transportista_recibidas: 'GRE Transp. R.',
-  retenciones_emitidas: 'Ret. Emit.',
-  retenciones_recibidas: 'Ret. Recib.',
-  percepciones_emitidas: 'Perc. Emit.',
-  percepciones_recibidas: 'Perc. Recib.',
+  facturas_emitidas: 'Facturas Emitidas',
+  facturas_recibidas: 'Facturas Recibidas',
+  boletas_emitidas: 'Boletas Emitidas',
+  boletas_recibidas: 'Boletas Recibidas',
+  nc_boletas_emitidas: 'NC Boletas Emitidas',
+  nd_boletas_emitidas: 'ND Boletas Emitidas',
+  guias_remision_emitidas: 'GRE Emitidas',
+  guias_remision_recibidas: 'GRE Recibidas',
+  guias_transportista_emitidas: 'GRT Emitidas',
+  guias_transportista_recibidas: 'GRT Recibidas',
+  retenciones_emitidas: 'Retenciones Emitidas',
+  retenciones_recibidas: 'Retenciones Recibidas',
+  percepciones_emitidas: 'Percepciones Emitidas',
+  percepciones_recibidas: 'Percepciones Recibidas',
 };
 
-const formatModulos = (modulos: string[]): string => {
+const formatModulos = (modulos: string[], maxShow: number = 2): string => {
   if (!modulos || modulos.length === 0) return '';
-  return modulos.map(m => MODULO_LABELS[m] || m).join(', ');
+
+  const labels = modulos.map(m => MODULO_LABELS[m] || m);
+
+  if (labels.length <= maxShow) {
+    return labels.join(', ');
+  }
+
+  const shown = labels.slice(0, maxShow).join(', ');
+  const remaining = labels.length - maxShow;
+  return `${shown}, +${remaining} más`;
 };
 
 export default function DescargasPage() {
@@ -339,11 +349,25 @@ export default function DescargasPage() {
                           {descarga.mensaje_progreso}
                         </p>
                       )}
-                      {descarga.estado === 'failed' && descarga.errores && (
-                        <p className="text-xs text-destructive mt-1 line-clamp-2" title={descarga.errores}>
-                          {descarga.errores}
-                        </p>
-                      )}
+                      {descarga.estado === 'failed' && descarga.errores && (() => {
+                        const friendlyError = translateError(descarga.errores);
+                        return (
+                          <div className="mt-1">
+                            <p className={cn(
+                              "text-xs font-medium",
+                              friendlyError.type === 'user' && "text-amber-500",
+                              friendlyError.type === 'temporary' && "text-blue-500",
+                              friendlyError.type === 'sunat' && "text-orange-500",
+                              friendlyError.type === 'system' && "text-destructive",
+                            )}>
+                              {friendlyError.message}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              💡 {friendlyError.action}
+                            </p>
+                          </div>
+                        );
+                      })()}
                       {descarga.estado === 'cancelled' && (
                         <p className="text-xs text-orange-500 mt-1">
                           {descarga.mensaje_progreso || 'Cancelada por el usuario'}
@@ -357,9 +381,12 @@ export default function DescargasPage() {
                         <p className="text-muted-foreground">Periodo</p>
                         <p className="font-medium text-foreground">{descarga.periodo}</p>
                       </div>
-                      <div className="max-w-[120px]">
-                        <p className="text-muted-foreground">Módulos</p>
-                        <p className="font-medium text-foreground truncate" title={formatModulos(descarga.modulos)}>
+                      <div className="max-w-[200px]">
+                        <p className="text-muted-foreground">Tipo</p>
+                        <p
+                          className="font-medium text-foreground truncate"
+                          title={descarga.modulos.map(m => MODULO_LABELS[m] || m).join(', ')}
+                        >
                           {formatModulos(descarga.modulos) || '-'}
                         </p>
                       </div>
