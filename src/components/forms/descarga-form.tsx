@@ -62,28 +62,41 @@ const FORMATOS = [
   { value: 'cdr', label: 'CDR', icon: FileArchive },
 ];
 
-function getLast24Months(): { value: string; label: string }[] {
-  const months = [];
-  const now = new Date();
+const MESES = [
+  { value: '01', label: 'Enero' },
+  { value: '02', label: 'Febrero' },
+  { value: '03', label: 'Marzo' },
+  { value: '04', label: 'Abril' },
+  { value: '05', label: 'Mayo' },
+  { value: '06', label: 'Junio' },
+  { value: '07', label: 'Julio' },
+  { value: '08', label: 'Agosto' },
+  { value: '09', label: 'Septiembre' },
+  { value: '10', label: 'Octubre' },
+  { value: '11', label: 'Noviembre' },
+  { value: '12', label: 'Diciembre' },
+];
 
-  for (let i = 0; i < 24; i++) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    const label = date.toLocaleDateString('es-PE', { year: 'numeric', month: 'long' });
-    months.push({ value, label });
+function getAvailableYears(): number[] {
+  const currentYear = new Date().getFullYear();
+  const startYear = 2015; // SUNAT electrónica desde ~2014-2015
+  const years = [];
+  for (let y = currentYear; y >= startYear; y--) {
+    years.push(y);
   }
-
-  return months;
+  return years;
 }
 
 export function DescargaForm({ empresas, onSubmit, onCancel }: DescargaFormProps) {
   const [loading, setLoading] = useState(false);
   const [empresaId, setEmpresaId] = useState('');
-  const [periodo, setPeriodo] = useState('');
+  const [anio, setAnio] = useState('');
+  const [mes, setMes] = useState('');
   const [modulos, setModulos] = useState<string[]>([]);
   const [formatos, setFormatos] = useState<string[]>(['xml', 'pdf']);
 
-  const periodos = getLast24Months();
+  const years = getAvailableYears();
+  const periodo = anio && mes ? `${anio}-${mes}` : '';
 
   const toggleModulo = (modulo: string) => {
     setModulos((prev) =>
@@ -99,7 +112,7 @@ export function DescargaForm({ empresas, onSubmit, onCancel }: DescargaFormProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!empresaId || !periodo || modulos.length === 0 || formatos.length === 0) return;
+    if (!empresaId || !anio || !mes || modulos.length === 0 || formatos.length === 0) return;
 
     setLoading(true);
     try {
@@ -151,16 +164,28 @@ export function DescargaForm({ empresas, onSubmit, onCancel }: DescargaFormProps
       {/* Periodo */}
       <div className="space-y-1.5">
         <Label className="text-sm">Periodo</Label>
-        <Select value={periodo} onValueChange={setPeriodo} required>
-          <SelectTrigger className="h-9">
-            <SelectValue placeholder="Selecciona periodo" />
-          </SelectTrigger>
-          <SelectContent>
-            {periodos.map((p) => (
-              <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="grid grid-cols-2 gap-2">
+          <Select value={anio} onValueChange={setAnio} required>
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="Año" />
+            </SelectTrigger>
+            <SelectContent>
+              {years.map((y) => (
+                <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={mes} onValueChange={setMes} required>
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="Mes" />
+            </SelectTrigger>
+            <SelectContent>
+              {MESES.map((m) => (
+                <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Modulos */}
@@ -206,7 +231,7 @@ export function DescargaForm({ empresas, onSubmit, onCancel }: DescargaFormProps
         <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={loading}>
           Cancelar
         </Button>
-        <Button type="submit" size="sm" disabled={loading || !empresaId || !periodo || modulos.length === 0}>
+        <Button type="submit" size="sm" disabled={loading || !empresaId || !anio || !mes || modulos.length === 0}>
           {loading ? (
             <>
               <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />

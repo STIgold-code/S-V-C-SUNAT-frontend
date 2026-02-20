@@ -64,6 +64,33 @@ const FORMATOS = [
   { value: 'cdr', label: 'CDR', icon: FileArchive },
 ];
 
+const MESES_NOMBRES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
+function calcularPeriodosPreview(periodoMeses: number): string[] {
+  const now = new Date();
+  let year = now.getFullYear();
+  let month = now.getMonth(); // 0-indexed
+  const periodos: string[] = [];
+
+  if (periodoMeses === 0) {
+    periodos.push(`${MESES_NOMBRES[month]} ${year}`);
+  } else {
+    for (let i = 0; i < periodoMeses; i++) {
+      month--;
+      if (month < 0) {
+        month = 11;
+        year--;
+      }
+      periodos.push(`${MESES_NOMBRES[month]} ${year}`);
+    }
+  }
+
+  return periodos;
+}
+
 export function DescargaProgramadaForm({
   empresas,
   onSuccess,
@@ -78,7 +105,8 @@ export function DescargaProgramadaForm({
   const [hora, setHora] = useState('08:00');
   const [modulos, setModulos] = useState<string[]>(['facturas_emitidas', 'facturas_recibidas']);
   const [formatos, setFormatos] = useState<string[]>(['xml', 'pdf']);
-  const [periodoRelativo, setPeriodoRelativo] = useState('previous');
+  const [periodoTipo, setPeriodoTipo] = useState<'actual' | 'anteriores'>('anteriores');
+  const [periodoMeses, setPeriodoMeses] = useState(1);
 
   const toggleModulo = (modulo: string) => {
     setModulos((prev) =>
@@ -111,7 +139,7 @@ export function DescargaProgramadaForm({
         hora,
         modulos,
         formatos,
-        periodo_relativo: periodoRelativo,
+        periodo_meses: periodoTipo === 'actual' ? 0 : periodoMeses,
       };
 
       if (frecuencia === 'weekly') {
@@ -228,17 +256,47 @@ export function DescargaProgramadaForm({
           </div>
         )}
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-sm">Periodo a descargar</Label>
-          <Select value={periodoRelativo} onValueChange={setPeriodoRelativo}>
-            <SelectTrigger className="h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="previous">Mes anterior</SelectItem>
-              <SelectItem value="current">Mes actual</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="periodoTipo"
+                checked={periodoTipo === 'actual'}
+                onChange={() => setPeriodoTipo('actual')}
+                className="w-4 h-4 text-primary"
+              />
+              <span className="text-sm">Mes actual</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="periodoTipo"
+                checked={periodoTipo === 'anteriores'}
+                onChange={() => setPeriodoTipo('anteriores')}
+                className="w-4 h-4 text-primary"
+              />
+              <span className="text-sm">Últimos</span>
+              <Input
+                type="number"
+                min={1}
+                max={60}
+                value={periodoMeses}
+                onChange={(e) => setPeriodoMeses(Math.min(60, Math.max(1, parseInt(e.target.value) || 1)))}
+                disabled={periodoTipo === 'actual'}
+                className="w-16 h-7 text-center text-sm"
+              />
+              <span className="text-sm">meses</span>
+            </label>
+          </div>
+          {/* Vista previa de meses */}
+          <div className="mt-2 p-2 bg-muted/50 rounded text-xs">
+            <span className="text-muted-foreground">Se descargará: </span>
+            <span className="font-medium">
+              {calcularPeriodosPreview(periodoTipo === 'actual' ? 0 : periodoMeses).join(', ')}
+            </span>
+          </div>
         </div>
       </div>
 
