@@ -4,6 +4,7 @@ import { useDescargaArchivos } from '@/hooks/use-descarga-archivos';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -55,6 +56,9 @@ export function DescargaArchivosModal({ descargaId, open, onClose }: Props) {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Archivos Disponibles</DialogTitle>
+          <DialogDescription>
+            Descarga los archivos generados por módulo
+          </DialogDescription>
         </DialogHeader>
 
         {loading && (

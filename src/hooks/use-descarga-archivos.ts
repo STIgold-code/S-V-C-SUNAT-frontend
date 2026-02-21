@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { DescargaArchivo } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4003';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4003/api/v1';
 
 export function useDescargaArchivos(descargaId: string | null) {
   const [archivos, setArchivos] = useState<DescargaArchivo[]>([]);
@@ -20,8 +20,8 @@ export function useDescargaArchivos(descargaId: string | null) {
       setLoading(true);
       setError(null);
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${API_URL}/api/v1/descargas/${descargaId}/archivos`, {
+        const token = localStorage.getItem('svc_sunat_token');
+        const res = await fetch(`${API_URL}/descargas/${descargaId}/archivos`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error('Error al cargar archivos');
@@ -38,8 +38,8 @@ export function useDescargaArchivos(descargaId: string | null) {
   }, [descargaId]);
 
   const downloadArchivo = async (archivoId: string, nombre: string) => {
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${API_URL}/api/v1/descargas/archivos/${archivoId}/download`, {
+    const token = localStorage.getItem('svc_sunat_token');
+    const res = await fetch(`${API_URL}/descargas/archivos/${archivoId}/download`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) throw new Error('Error al descargar archivo');
